@@ -1,3 +1,4 @@
+import Link from "next/link";
 
 export default function Home() {
   return (
@@ -9,11 +10,14 @@ export default function Home() {
         SnipStack is a simple, focused place to store, search, and share your
         most important code snippets.
       </p>
-      <button
-        className="mt-4 rounded-lg bg-emerald-500 px-4 py-2 text-sm font-medium text-slate-950 hover:bg-emerald-300 transition-colors"
-      >
-        Create your first snippet
-      </button>
+      <div className="flex gap-3">
+        <Link
+          href="/dashboard"
+          className="rounded-lg bg-emerald-500 px-4 py-2 text-sm font-medium text-slate-950 hover:bg-emerald-400 transition-colors"
+        >
+          Go to dashboard
+        </Link>
+      </div>
     </section>
   );
 }
