@@ -1,6 +1,61 @@
 import { SignedIn, SignedOut } from "@clerk/nextjs";
 import { createSnippet } from "./actions";
 
+import { auth } from "@clerk/nextjs/server";
+import { db } from "@/db";
+import { snippets } from "@/db/schema";
+import { desc, eq } from "drizzle-orm";
+import { SnippetForm } from "./ClientForm";
+
+async function SnippetList() {
+    const {userId} = await auth();
+
+    if(!userId){
+        return null;
+    }
+
+    const rows = await db
+        .select()
+        .from(snippets)
+        .where(eq(snippets.userId, userId))
+        .orderBy(desc(snippets.createdAt))
+        .limit(20);
+
+    // Handle none found
+    if(!rows.length){
+        return (
+            <p className="text-sm text-slate-400">
+                No snippets yet. Create one above
+            </p>
+        )
+    }
+
+    return (
+    <ul className="space-y-3">
+      {rows.map((snip) => (
+        <li
+          key={snip.id}
+          className="rounded-lg border border-slate-800 bg-slate-900/50 p-3"
+        >
+          <div className="flex items-center justify-between gap-2">
+            <div>
+              <h3 className="text-sm font-semibold text-slate-100">
+                {snip.title}
+              </h3>
+              <p className="text-xs text-slate-400">
+                {snip.language} • {snip.tags || "no tags"}
+              </p>
+            </div>
+            <span className="rounded-full bg-slate-800 px-2 py-0.5 text-[10px] uppercase tracking-wide text-slate-300">
+              {snip.visibility}
+            </span>
+          </div>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 export default function DashboardPage(){
     return (
         <section className="max-w-3xl mx-auto space-y-4">
@@ -11,78 +66,8 @@ export default function DashboardPage(){
             </SignedOut>
 
             <SignedIn>
-                <h2 className="text-3xl font-bold tracking-tight mb-2">
-                Dashboard
-                </h2>
-                <p className="text-slate-300">
-                This is where your snippets and analytics will live.
-                </p>
-
-                <form
-                    action={createSnippet}
-                    className="space-y-4 rounded-lg border border-slate-800 bg-slate-900/40 p-4"
-                >
-                <div className="space-y-1">
-                    <label className="block text-sm font-medium text-slate-200">
-                    Title
-                    </label>
-                    <input
-                    name="title"
-                    required
-                    className="w-full rounded-md border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-50 outline-none focus:border-emerald-500"
-                    placeholder="e.g. useDebounce hook"
-                    />
-                </div>
-
-                <div className="space-y-1">
-                    <label className="block text-sm font-medium text-slate-200">
-                    Language
-                    </label>
-                    <select
-                    name="language"
-                    className="w-full rounded-md border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-50 outline-none focus:border-emerald-500"
-                    defaultValue="typescript"
-                    >
-                    <option value="typescript">TypeScript</option>
-                    <option value="javascript">JavaScript</option>
-                    <option value="python">Python</option>
-                    <option value="rust">Rust</option>
-                    <option value="go">Go</option>
-                    <option value="java">Java</option>
-                    </select>
-                </div>
-
-                <div className="space-y-1">
-                    <label className="block text-sm font-medium text-slate-200">
-                    Code
-                    </label>
-                    <textarea
-                    name="code"
-                    required
-                    rows={6}
-                    className="w-full rounded-md border border-slate-700 bg-slate-900 px-3 py-2 text-sm font-mono text-slate-50 outline-none focus:border-emerald-500"
-                    placeholder={`// Paste your snippet here`}
-                    />
-                </div>
-
-                <div className="space-y-1">
-                    <label className="block text-sm font-medium text-slate-200">
-                    Tags (comma separated)
-                    </label>
-                    <input
-                    name="tags"
-                    className="w-full rounded-md border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-50 outline-none focus:border-emerald-500"
-                    placeholder="react,nextjs,hooks"
-                    />
-                </div>
-
-                <button
-                    type="submit"
-                    className="rounded-lg bg-emerald-500 px-4 py-2 text-sm font-medium text-slate-950 hover:bg-emerald-400 transition-colors"
-                >
-                    Save snippet
-                </button>
-                </form>
+              <SnippetForm />
+              <SnippetList />
             </SignedIn>
         </section>
     );

@@ -10,6 +10,7 @@ import {
   SignedOut,
   UserButton,
 } from '@clerk/nextjs';
+import { ToastProvider } from "@/components/toast";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,6 +36,7 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="en">
         <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+          <ToastProvider>
           <header className="flex justify-between items-center px-6 py-4 border-b border-slate-800">
             <h1 className="text-xl font-semibold tracking-tight">
               SnipStack
@@ -56,6 +58,7 @@ export default function RootLayout({
             </div>
           </header>
           {children}
+          </ToastProvider>
         </body>
       </html>
     </ClerkProvider>
